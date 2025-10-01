@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>Гра німецько-українська: вибір теми</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header><h1>Гра німецько-українська</h1></header>
+
+<select id="themeSelect">
+  <option value="">Виберіть тему</option>
+  <option value="hygiene">Догляд і гігієна</option>
+  <option value="medicine">Медицина</option>
+  <option value="exercise">Рух і здоров’я</option>
+  <option value="leisure">Дозвілля</option>
+  <option value="travel">Подорожі</option>
+  <option value="family">Сім’я</option>
+</select>
+
+<h2 id="germanWord">Натисніть "Почати нову гру"</h2>
+<div id="options"></div>
+<div id="timer">Час: --</div>
+<div id="score">Рахунок: 0</div>
+<div id="message"></div>
+
+<div id="controls">
+  <button id="startBtn">Почати нову гру</button>
+  <button id="endBtn">Закінчити гру</button>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
