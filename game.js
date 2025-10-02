@@ -147,14 +147,37 @@ function loadVoices() {
 // Озвучка німецького слова
 // ============================
 function speakGerman(word) {
-  if (!voices.length) loadVoices();
+  // Завантажуємо голоси, якщо ще не завантажені
+  if (!voices.length) {
+    voices = window.speechSynthesis.getVoices();
+    if (voices.length === 0) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        voices = window.speechSynthesis.getVoices();
+      };
+    }
+  }
+
   const msg = new SpeechSynthesisUtterance(word);
   msg.lang = 'de-DE';
-  msg.rate = 0.9;
-  msg.voice = voices.find(v => v.lang.includes('de')) || null;
-  window.speechSynthesis.speak(msg);
-}
 
+  // Спроба знайти м'який жіночий голос
+  let voice = voices.find(v => v.lang.includes('de') && v.name.toLowerCase().includes('female'));
+  if (!voice) voice = voices.find(v => v.lang.includes('de'));
+  msg.voice = voice || null;
+
+  // Налаштування для більш м’якого звучання
+  msg.rate = 0.85;   // трохи повільніше
+  msg.pitch = 1.1;   // трохи вищий тембр
+  msg.volume = 1.0;  // гучність максимум
+
+  // На мобільних iOS/Android TTS працює тільки після user gesture
+  try {
+    window.speechSynthesis.cancel(); // скидаємо попереднє озвучення
+    window.speechSynthesis.speak(msg);
+  } catch(e) {
+    console.error("Помилка озвучки:", e);
+  }
+}
 // ============================
 // Показ наступного слова
 // ============================
