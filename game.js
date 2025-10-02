@@ -338,7 +338,42 @@ medicine: [
   {de: "Infektion", ua: "Інфекція"},
   {de: "Allergie", ua: "Алергія"},
   {de: "Schwangerschaft", ua: "Вагітність"}
-]
+],
+demenz: [
+    // Общие понятия
+    {de: "Demenz", ua: "Деменція"},
+    {de: "Fähigkeiten", ua: "Здібності"},
+    {de: "alltägliche Tätigkeiten", ua: "Повсякденні дії"},
+    {de: "Vergesslichkeit", ua: "Забудькуватість"},
+    {de: "Kurzzeitgedächtnis", ua: "Короткочасна пам'ять"},
+    {de: "neurologische Beeinträchtigungen", ua: "Неврологічні порушення"},
+    {de: "Einfluss auf die Persönlichkeit", ua: "Вплив на особистість"},
+    {de: "Charakter, Verhalten", ua: "Характер, поведінка"},
+    {de: "physische Grenzen / Sinnesfunktionen verändern sich", ua: "Фізичні обмеження / змінюються сенсорні функції"},
+    {de: "Reaktionen verlangsamen sich", ua: "Реакції сповільнюються"},
+    {de: "Aggressionen, Wut, Trauer", ua: "Агресія, гнів, смуток"},
+    {de: "Abbau von Nervenzellen im Hirn", ua: "Розрушення нервових клітин у мозку"},
+    {de: "Protein-Einlagerung", ua: "Відкладення білків"},
+    {de: "genetisch / Stress", ua: "Генетично / стрес"},
+    {de: "Umwelt / Unterforderung", ua: "Середовище / недостатнє навантаження"},
+    {de: "Vaskuläre Demenz", ua: "Судинна деменція"},
+    {de: "durch Schlaganfall", ua: "Через інсульт"},
+    {de: "durch Durchblutungsstörungen", ua: "Через порушення кровообігу"},
+    {de: "Parkinson, Tumor", ua: "Паркінсон, пухлина"},
+
+    // Стадии
+    {de: "Leichte Demenz", ua: "Легка деменція"},
+    {de: "Konzentration / Merkfähigkeit", ua: "Концентрація / здатність запам'ятовувати"},
+    {de: "Mittelschwere Demenz", ua: "Середня деменція"},
+    {de: "Orientierung oft defizitär", ua: "Орієнтація часто порушена"},
+    {de: "Wandel, Sprachstörung", ua: "Нестійка хода, порушення мови"},
+    {de: "Schwere Demenz", ua: "Важка деменція"},
+    {de: "vollständig unselbständig", ua: "Повністю несамостійний"},
+    {de: "Totale Abhängigkeit", ua: "Повна залежність"},
+    {de: "Verlust der Sprache", ua: "Втрата мови"},
+    {de: "Inkontinenz", ua: "Нетримання"},
+    {de: "Liegen, Bettlägerig", ua: "Лежаче положення, прикутий до ліжка"}
+  ]
    
 };
 
