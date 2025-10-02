@@ -556,13 +556,30 @@ function updateProgressBar() {
 // ====== Озвучка ======
 function speakWord(word) {
   if (!('speechSynthesis' in window)) return;
-  const u = new SpeechSynthesisUtterance(word);
-  u.lang = 'de-DE';
+
+  const utter = new SpeechSynthesisUtterance(word);
+
   function setVoiceAndSpeak() {
     const voices = speechSynthesis.getVoices();
-    u.voice = voices.find(v => v.lang && v.lang.includes('de')) || voices[0];
-    try { speechSynthesis.speak(u); } catch (e) { /* ignore */ }
+    
+    // Вибираємо максимально природний німецький голос
+    utter.voice = voices.find(v => v.lang.startsWith('de') && !v.name.toLowerCase().includes('male')) 
+                  || voices.find(v => v.lang.startsWith('de')) 
+                  || voices[0];
+
+    // Налаштування швидкості та висоти для мобільних
+    if (word.length <= 8) {
+      utter.rate = 0.85;   // трохи повільніше для коротких слів
+      utter.pitch = 1.2;   // трохи вищий тон — чіткіше звучить
+    } else {
+      utter.rate = 0.9;
+      utter.pitch = 1.1;
+    }
+
+    try { speechSynthesis.speak(utter); } catch(e){ /* ігноруємо */ }
   }
+
+  // Підстраховка для мобільних, коли голоси ще не завантажились
   if (speechSynthesis.getVoices().length === 0) {
     speechSynthesis.onvoiceschanged = setVoiceAndSpeak;
   } else {
