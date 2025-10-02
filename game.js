@@ -565,20 +565,20 @@ function speakWord(word) {
 
   const utter = new SpeechSynthesisUtterance(word);
   utter.lang = 'de-DE';
-  
-  // Пробуємо знайти голос німецької мови
+  utter.rate = 0.9;   // трохи повільніше
+  utter.pitch = 1.05; // трохи вище для природності
+  utter.volume = 1;
+
   function setVoiceAndSpeak() {
     const voices = speechSynthesis.getVoices();
-    // шукаємо більш природний голос (жінка/чоловік)
-    const preferred = voices.find(v => v.lang.includes('de') && v.name.toLowerCase().includes('female')) 
-                     || voices.find(v => v.lang.includes('de')) 
-                     || voices[0];
-    utter.voice = preferred;
-    
-    // Параметри для природності
-    utter.rate = 0.9;  // трохи повільніше
-    utter.pitch = 1.1; // трохи вище для природного тембру
-    utter.volume = 1;
+
+    // Список популярних сучасних німецьких голосів на мобільних
+    const preferredNames = ['Anna', 'Lisa', 'Markus', 'Anna (Germany)', 'Thomas'];
+
+    // Вибираємо перший доступний сучасний голос
+    utter.voice = voices.find(v => preferredNames.includes(v.name)) 
+                  || voices.find(v => v.lang.includes('de')) 
+                  || voices[0];
 
     try { speechSynthesis.speak(utter); } catch(e) {}
   }
@@ -586,12 +586,9 @@ function speakWord(word) {
   // Якщо голоси ще не завантажились
   if (speechSynthesis.getVoices().length === 0) {
     speechSynthesis.onvoiceschanged = setVoiceAndSpeak;
+    // Додатково трохи зачекати
+    setTimeout(() => speechSynthesis.getVoices(), 100);
   } else {
     setVoiceAndSpeak();
   }
 }
-// ====== Автозапуск ======
-window.addEventListener('load', () => {
-  // переконаємось, що DOM елементи є
-  startNewGame();
-});
