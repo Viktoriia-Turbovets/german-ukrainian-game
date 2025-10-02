@@ -54,3 +54,39 @@ header h1 { margin:0; font-size:32px; }
 #message.end { color:#8e44ad; }
 
 #controls { margin-top:28px; display:flex; justify-content:center; gap:16px; }
+/* Адаптивність для мобільних */
+@media (max-width: 600px) {
+    body {
+        padding: 20px;
+    }
+
+    header h1 {
+        font-size: 26px;
+    }
+
+    #germanWord {
+        font-size: 24px;
+    }
+
+    #options button, #controls button, select {
+        padding: 18px 28px;
+        font-size: 20px;
+    }
+
+    #timer, #score {
+        font-size: 22px;
+    }
+
+    #message {
+        font-size: 20px;
+    }
+
+    #controls {
+        flex-direction: column;
+        gap: 12px;
+    }
+}
+#options button:hover, #controls button:hover {
+    background:#1f6391;
+    transform:scale(1.05);
+}

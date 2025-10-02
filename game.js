@@ -109,16 +109,45 @@ function playWrongSound(){
   g.gain.exponentialRampToValueAtTime(0.0001,now+0.45); o.stop(now+0.46);
 }
 
-function speakGerman(text){
-  try{
-    const utter=new SpeechSynthesisUtterance(text);
-    utter.lang="de-DE"; utter.rate=0.92;
-    speechSynthesis.cancel(); speechSynthesis.speak(utter);
-  }catch(e){console.warn("TTS error:",e);}
+function speakGerman(word) {
+    const msg = new SpeechSynthesisUtterance(word);
+    msg.lang = 'de-DE';
+    msg.rate = 0.9; // повільніше для кращого розуміння
+    window.speechSynthesis.speak(msg);
 }
 
-function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];} return arr;}
+function showNextWord(){
+  if(currentIndex>=gamePairs.length){
+    clearInterval(timer);
+    document.getElementById("message").innerText=`🎉 Гру завершено! Ваш рахунок: ${score} з ${gamePairs.length}`;
+    document.getElementById("message").className="end";
+    document.getElementById("options").innerHTML="";
+    document.getElementById("germanWord").innerText="Гра завершена";
+    return;
+  }
+  const currentWord=gamePairs[currentIndex];
+  document.getElementById("germanWord").innerText=currentWord[0];
+  document.getElementById("message").innerText="";
+  speakGerman(currentWord[0]);  // ✅ озвучуємо німецьке слово
 
+  let options=[currentWord[1]];
+  while(options.length<4){
+    const randomWord=themes[themeSelect.value][Math.floor(Math.random()*themes[themeSelect.value].length)][1];
+    if(!options.includes(randomWord)) options.push(randomWord);
+  }
+  options=shuffle(options);
+
+  const buttonsContainer=document.getElementById("options");
+  buttonsContainer.innerHTML="";
+  options.forEach(option=>{
+    const btn=document.createElement("button");
+    btn.innerText=option;
+    btn.onclick=()=>checkAnswer(btn,currentWord[1]);
+    buttonsContainer.appendChild(btn);
+  });
+
+  startTimer();
+}
 // UI
 const startBtn=document.getElementById('startBtn');
 const endBtn=document.getElementById('endBtn');
@@ -213,4 +242,11 @@ function checkAnswer(button,correct){
 
 function showMessage(text,type){
   const message=document.getElementById("message"); message.innerText=text; message.className=type;
+}
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
 }
