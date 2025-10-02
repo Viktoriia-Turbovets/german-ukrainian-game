@@ -557,29 +557,33 @@ function updateProgressBar() {
 function speakWord(word) {
   if (!('speechSynthesis' in window)) return;
 
-  const utterance = new SpeechSynthesisUtterance(word);
-  utterance.lang = 'de-DE';
+  const utter = new SpeechSynthesisUtterance(word);
+  utter.lang = 'de-DE';
   
-  function setBestVoiceAndSpeak() {
-    const voices = speechSynthesis.getVoices().filter(v => v.lang.includes('de'));
-    // Сортуємо голоси: намагаємося знайти більш природний
-    // голос Google або iOS/Android високої якості, якщо є
-    let chosenVoice = voices.find(v => v.name.toLowerCase().includes('google')) || voices[0];
-    utterance.voice = chosenVoice;
+  // Пробуємо знайти голос німецької мови
+  function setVoiceAndSpeak() {
+    const voices = speechSynthesis.getVoices();
+    // шукаємо більш природний голос (жінка/чоловік)
+    const preferred = voices.find(v => v.lang.includes('de') && v.name.toLowerCase().includes('female')) 
+                     || voices.find(v => v.lang.includes('de')) 
+                     || voices[0];
+    utter.voice = preferred;
+    
+    // Параметри для природності
+    utter.rate = 0.9;  // трохи повільніше
+    utter.pitch = 1.1; // трохи вище для природного тембру
+    utter.volume = 1;
 
-    // Трохи покращимо звучання
-    utterance.rate = 0.9;  // швидкість (0.8-1.0 природно)
-    utterance.pitch = 1;    // висота голосу
-    try { speechSynthesis.speak(utterance); } catch(e) {}
+    try { speechSynthesis.speak(utter); } catch(e) {}
   }
 
+  // Якщо голоси ще не завантажились
   if (speechSynthesis.getVoices().length === 0) {
-    speechSynthesis.onvoiceschanged = setBestVoiceAndSpeak;
+    speechSynthesis.onvoiceschanged = setVoiceAndSpeak;
   } else {
-    setBestVoiceAndSpeak();
+    setVoiceAndSpeak();
   }
 }
-
 // ====== Автозапуск ======
 window.addEventListener('load', () => {
   // переконаємось, що DOM елементи є
