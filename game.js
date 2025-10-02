@@ -483,7 +483,8 @@ function handleTimeout() {
 
 // ====== Генерація опцій ======
 function generateOptions() {
-  optionsContainer.innerHTML = '';
+  optionsContainer.innerHTML = ''; // очищаємо старі кнопки
+
   const all = categories[currentCategory].map(w => ({
     de: w.de,
     ua: w.ua
@@ -500,15 +501,20 @@ function generateOptions() {
 
   shuffleArray(options);
 
-  options.forEach(optText => {
+  options.forEach((optText, index) => {
     const btn = document.createElement('button');
     btn.className = 'option-btn';
     btn.textContent = optText;
+    btn.disabled = false;
     btn.onclick = () => checkAnswer(optText);
     optionsContainer.appendChild(btn);
+
+    // Анімація появи кнопок із невеликим затриманням
+    setTimeout(() => {
+      btn.classList.add('show');
+    }, 100 * index); // кожна кнопка з’являється через 0.1s одну за одною
   });
 }
-
 // ====== Перевірка відповіді ======
 function checkAnswer(answerText) {
   clearInterval(timer);
