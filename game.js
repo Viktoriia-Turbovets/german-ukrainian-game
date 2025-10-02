@@ -80,213 +80,72 @@ const themes = {
   ]
 };
 
-// ============================
-// Глобальні змінні
-// ============================
-let gamePairs = [];
-let currentIndex = 0;
-let score = 0;
-let timer = null;
-let audioCtx = null;
-let voices = [];
 
-// ============================
-// Ініціалізація Web Audio
-// ============================
+
+// =================== Глобальні змінні ===================
+let gamePairs = [], currentIndex = 0, score = 0, timer = null;
+let audioCtx = null, voices = [];
+
+// =================== Web Audio для звуків ===================
 function initAudioIfNeeded() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
+  if(!audioCtx){audioCtx=new (window.AudioContext||window.webkitAudioContext)();}
+  if(audioCtx.state==='suspended'){audioCtx.resume();}
 }
 
-// ============================
-// Функції звуку для відповідей
-// ============================
-function playCorrectSound() {
-  if (!audioCtx) return;
-  const now = audioCtx.currentTime, o = audioCtx.createOscillator(), g = audioCtx.createGain();
-  o.type = 'sine';
-  o.frequency.setValueAtTime(880, now);
-  g.gain.setValueAtTime(0.0001, now);
-  g.gain.linearRampToValueAtTime(0.18, now + 0.01);
-  o.connect(g);
-  g.connect(audioCtx.destination);
-  o.start(now);
-  g.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
-  o.stop(now + 0.62);
+function playCorrectSound(){
+  if(!audioCtx) return;
+  const now=audioCtx.currentTime,o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.type='sine'; o.frequency.setValueAtTime(880,now);
+  g.gain.setValueAtTime(0.0001,now); g.gain.linearRampToValueAtTime(0.18,now+0.01);
+  o.connect(g); g.connect(audioCtx.destination); o.start(now);
+  g.gain.exponentialRampToValueAtTime(0.0001,now+0.6); o.stop(now+0.62);
 }
 
-function playWrongSound() {
-  if (!audioCtx) return;
-  const now = audioCtx.currentTime, o = audioCtx.createOscillator(), g = audioCtx.createGain();
-  o.type = 'sine';
-  o.frequency.setValueAtTime(300, now);
-  o.frequency.exponentialRampToValueAtTime(120, now + 0.12);
-  g.gain.setValueAtTime(0.0001, now);
-  g.gain.linearRampToValueAtTime(0.18, now + 0.01);
-  o.connect(g);
-  g.connect(audioCtx.destination);
-  o.start(now);
-  g.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
-  o.stop(now + 0.46);
+function playWrongSound(){
+  if(!audioCtx) return;
+  const now=audioCtx.currentTime,o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.type='sine'; o.frequency.setValueAtTime(300,now);
+  o.frequency.exponentialRampToValueAtTime(120,now+0.12);
+  g.gain.setValueAtTime(0.0001,now); g.gain.linearRampToValueAtTime(0.18,now+0.01);
+  o.connect(g); g.connect(audioCtx.destination); o.start(now);
+  g.gain.exponentialRampToValueAtTime(0.0001,now+0.45); o.stop(now+0.46);
 }
 
-// ============================
-// Завантаження голосів TTS
-// ============================
-function loadVoices() {
-  voices = window.speechSynthesis.getVoices();
-  if (voices.length === 0) {
-    // на деяких мобільних потрібно почекати
+// =================== Функція озвучки ===================
+function speakGerman(word) {
+  if (!voices.length) voices = window.speechSynthesis.getVoices();
+  if (!voices.length) {
     window.speechSynthesis.onvoiceschanged = () => {
       voices = window.speechSynthesis.getVoices();
-    }
-  }
-}
-
-// ============================
-// Озвучка німецького слова
-// ============================
-function speakGerman(word) {
-  // Завантажуємо голоси, якщо ще не завантажені
-  if (!voices.length) {
-    voices = window.speechSynthesis.getVoices();
-    if (voices.length === 0) {
-      window.speechSynthesis.onvoiceschanged = () => {
-        voices = window.speechSynthesis.getVoices();
-      };
-    }
+      speakGerman(word);
+    };
+    return;
   }
 
   const msg = new SpeechSynthesisUtterance(word);
   msg.lang = 'de-DE';
-
-  // Спроба знайти м'який жіночий голос
   let voice = voices.find(v => v.lang.includes('de') && v.name.toLowerCase().includes('female'));
   if (!voice) voice = voices.find(v => v.lang.includes('de'));
   msg.voice = voice || null;
 
-  // Налаштування для більш м’якого звучання
-  msg.rate = 0.85;   // трохи повільніше
-  msg.pitch = 1.1;   // трохи вищий тембр
-  msg.volume = 1.0;  // гучність максимум
+  msg.rate = 0.85;
+  msg.pitch = 1.1;
+  msg.volume = 1.0;
 
-  // На мобільних iOS/Android TTS працює тільки після user gesture
   try {
-    window.speechSynthesis.cancel(); // скидаємо попереднє озвучення
+    window.speechSynthesis.cancel();
     window.speechSynthesis.speak(msg);
   } catch(e) {
     console.error("Помилка озвучки:", e);
   }
 }
-// ============================
-// Показ наступного слова
-// ============================
-function showNextWord() {
-  if (currentIndex >= gamePairs.length) {
-    clearInterval(timer);
-    document.getElementById("germanWord").innerText = "Гра завершена";
-    document.getElementById("options").innerHTML = "";
-    showMessage(`🎉 Гру завершено! Ваш рахунок: ${score} з ${gamePairs.length}`, "end");
-    return;
-  }
 
-  const currentWord = gamePairs[currentIndex];
-  document.getElementById("germanWord").innerText = currentWord[0];
-  speakGerman(currentWord[0]);
-  document.getElementById("message").innerText = "";
-
-  let options = [currentWord[1]];
-  while (options.length < 4) {
-    const randomWord = themes[themeSelect.value][Math.floor(Math.random() * themes[themeSelect.value].length)][1];
-    if (!options.includes(randomWord)) options.push(randomWord);
-  }
-  options = shuffle(options);
-
-  const buttonsContainer = document.getElementById("options");
-  buttonsContainer.innerHTML = "";
-  options.forEach(option => {
-    const btn = document.createElement("button");
-    btn.innerText = option;
-    btn.onclick = () => checkAnswer(btn, currentWord[1]);
-    buttonsContainer.appendChild(btn);
-  });
-
-  startTimer();
-}
-
-// ============================
-// Таймер
-// ============================
-function startTimer() {
-  clearInterval(timer);
-  let timeLeft = 10;
-  const timerDisplay = document.getElementById("timer");
-  timerDisplay.innerText = `Час: ${timeLeft}s`;
-
-  timer = setInterval(() => {
-    timeLeft--;
-    timerDisplay.innerText = `Час: ${timeLeft}s`;
-    if (timeLeft <= 0) {
-      clearInterval(timer);
-      playWrongSound();
-      showMessage(`⏰ Час вичерпано! Правильна відповідь: ${gamePairs[currentIndex][1]}`, "error");
-      currentIndex++;
-      setTimeout(showNextWord, 1200);
-    }
-  }, 1000);
-}
-
-// ============================
-// Перевірка відповіді
-// ============================
-function checkAnswer(button, correct) {
-  clearInterval(timer);
-  const buttons = document.querySelectorAll("#options button");
-  buttons.forEach(btn => btn.disabled = true);
-
-  if (button.innerText.toLowerCase() === correct.toLowerCase()) {
-    button.classList.add('correct');
-    score++;
-    playCorrectSound();
-    showMessage("✅ Правильно!", "success");
-  } else {
-    button.classList.add('wrong');
-    playWrongSound();
-    showMessage(`❌ Неправильно! Правильна відповідь: ${correct}`, "error");
-    buttons.forEach(btn => { if (btn.innerText.toLowerCase() === correct.toLowerCase()) btn.classList.add('correct'); });
-  }
-
-  document.getElementById("score").innerText = `Рахунок: ${score}`;
-  currentIndex++;
-  setTimeout(showNextWord, 1200);
-}
-
-// ============================
-// Повідомлення
-// ============================
-function showMessage(text, type) {
-  const message = document.getElementById("message");
-  message.innerText = text;
-  message.className = type;
-}
-
-// ============================
-// Початок та кінець гри
-// ============================
-const startBtn = document.getElementById('startBtn');
-const endBtn = document.getElementById('endBtn');
-const themeSelect = document.getElementById('themeSelect');
-
-startBtn.addEventListener('click', () => {
-  initAudioIfNeeded();
-  loadVoices();
-  if (!themeSelect.value) { alert("Оберіть тему!"); return; }
-  startGame();
-});
-
-endBtn.addEventListener('click', () => endGame());
-
+// =================== Функції гри ===================
 function startGame() {
+  const themeSelect = document.getElementById('themeSelect');
+  if(!themeSelect.value){alert("Оберіть тему!"); return;}
+
+  initAudioIfNeeded();
   gamePairs = shuffle([...themes[themeSelect.value]]);
   currentIndex = 0;
   score = 0;
@@ -300,17 +159,108 @@ function endGame() {
   document.getElementById("germanWord").innerText = "Гру завершено";
   document.getElementById("options").innerHTML = "";
   document.getElementById("timer").innerText = "Час: --";
-  showMessage("Гру зупинено ❌", "end");
-  try { speechSynthesis.cancel(); } catch(e) {}
+  showMessage("Гру зупинено ❌","end");
+  try{speechSynthesis.cancel();}catch(e){}
 }
 
-// ============================
-// Функція shuffle
-// ============================
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+function showNextWord() {
+  if(currentIndex >= gamePairs.length){
+    clearInterval(timer);
+    document.getElementById("germanWord").innerText = "Гра завершена";
+    document.getElementById("options").innerHTML = "";
+    showMessage(`🎉 Гру завершено! Ваш рахунок: ${score} з ${gamePairs.length}`, "end");
+    return;
+  }
+
+  const currentWord = gamePairs[currentIndex];
+  document.getElementById("germanWord").innerText = currentWord[0];
+  document.getElementById("message").innerText = "";
+
+  // Озвучка
+  speakGerman(currentWord[0]);
+
+  // Генеруємо варіанти відповіді
+  let options = [currentWord[1]];
+  while(options.length < 4){
+    const randomWord = themes[document.getElementById('themeSelect').value][Math.floor(Math.random() * themes[document.getElementById('themeSelect').value].length)][1];
+    if(!options.includes(randomWord)) options.push(randomWord);
+  }
+  options = shuffle(options);
+
+  // Відображення кнопок
+  const buttonsContainer = document.getElementById("options");
+  buttonsContainer.innerHTML = "";
+  options.forEach(option => {
+    const btn = document.createElement("button");
+    btn.innerText = option;
+    btn.onclick = () => checkAnswer(btn, currentWord[1]);
+    buttonsContainer.appendChild(btn);
+  });
+
+  startTimer();
+}
+
+function checkAnswer(button, correct){
+  clearInterval(timer);
+  const buttons = document.querySelectorAll("#options button");
+  buttons.forEach(btn => btn.disabled = true);
+
+  if(button.innerText.toLowerCase() === correct.toLowerCase()){
+    button.classList.add('correct');
+    score++; 
+    playCorrectSound(); 
+    showMessage("✅ Правильно!", "success");
+  } else {
+    button.classList.add('wrong'); 
+    playWrongSound(); 
+    showMessage(`❌ Неправильно! Правильна відповідь: ${correct}`, "error");
+    buttons.forEach(btn => { 
+      if(btn.innerText.toLowerCase() === correct.toLowerCase()) btn.classList.add('correct'); 
+    });
+  }
+
+  document.getElementById("score").innerText = `Рахунок: ${score}`;
+  currentIndex++; 
+
+  setTimeout(showNextWord, 1200);
+}
+
+function startTimer(){
+  clearInterval(timer);
+  let timeLeft=10;
+  const timerDisplay=document.getElementById("timer");
+  timerDisplay.innerText=`Час: ${timeLeft}s`;
+  timer=setInterval(()=>{
+    timeLeft--; 
+    timerDisplay.innerText=`Час: ${timeLeft}s`;
+    if(timeLeft<=0){
+      clearInterval(timer); 
+      playWrongSound();
+      showMessage(`⏰ Час вичерпано! Правильна відповідь: ${gamePairs[currentIndex][1]}`,"error");
+      currentIndex++; 
+      setTimeout(showNextWord,1200);
+    }
+  },1000);
+}
+
+function showMessage(text,type){
+  const message=document.getElementById("message"); 
+  message.innerText=text; 
+  message.className=type;
+}
+
+// =================== Утиліти ===================
+function shuffle(array){
+  for(let i=array.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [array[i],array[j]]=[array[j],array[i]];
   }
   return array;
 }
+
+// =================== Обробники кнопок ===================
+document.getElementById('startBtn').addEventListener('click', startGame);
+document.getElementById('endBtn').addEventListener('click', endGame);
+document.getElementById('repeatBtn').addEventListener('click', () => {
+  if(currentIndex < gamePairs.length) speakGerman(gamePairs[currentIndex][0]);
+});
