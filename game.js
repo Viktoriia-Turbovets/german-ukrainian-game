@@ -80,173 +80,194 @@ const themes = {
   ]
 };
 
-// Решта коду гри (таймер, shuffle, checkAnswer, speakGerman) залишається таким самим як у попередньому варіанті
-// ...
+// ========================
+// Змінні гри
+// ========================
 let gamePairs = [], currentIndex = 0, score = 0, timer = null, audioCtx = null;
+let germanVoices = [];
 
-// WebAudio
+// ========================
+// WebAudio для звуків
+// ========================
 function initAudioIfNeeded() {
-  if(!audioCtx){audioCtx=new (window.AudioContext||window.webkitAudioContext)();}
-  if(audioCtx.state==='suspended'){audioCtx.resume();}
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
 }
 
-function playCorrectSound(){
-  if(!audioCtx) return;
-  const now=audioCtx.currentTime,o=audioCtx.createOscillator(),g=audioCtx.createGain();
-  o.type='sine'; o.frequency.setValueAtTime(880,now);
-  g.gain.setValueAtTime(0.0001,now); g.gain.linearRampToValueAtTime(0.18,now+0.01);
+function playCorrectSound() {
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime, o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(880, now);
+  g.gain.setValueAtTime(0.0001, now); g.gain.linearRampToValueAtTime(0.18, now+0.01);
   o.connect(g); g.connect(audioCtx.destination); o.start(now);
-  g.gain.exponentialRampToValueAtTime(0.0001,now+0.6); o.stop(now+0.62);
+  g.gain.exponentialRampToValueAtTime(0.0001, now+0.6); o.stop(now+0.62);
 }
 
-function playWrongSound(){
-  if(!audioCtx) return;
-  const now=audioCtx.currentTime,o=audioCtx.createOscillator(),g=audioCtx.createGain();
-  o.type='sine'; o.frequency.setValueAtTime(300,now);
-  o.frequency.exponentialRampToValueAtTime(120,now+0.12);
-  g.gain.setValueAtTime(0.0001,now); g.gain.linearRampToValueAtTime(0.18,now+0.01);
+function playWrongSound() {
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime, o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(300, now);
+  o.frequency.exponentialRampToValueAtTime(120, now+0.12);
+  g.gain.setValueAtTime(0.0001, now); g.gain.linearRampToValueAtTime(0.18, now+0.01);
   o.connect(g); g.connect(audioCtx.destination); o.start(now);
-  g.gain.exponentialRampToValueAtTime(0.0001,now+0.45); o.stop(now+0.46);
+  g.gain.exponentialRampToValueAtTime(0.0001, now+0.45); o.stop(now+0.46);
 }
+
+// ========================
+// Озвучка німецьких слів
+// ========================
+function loadVoices() {
+  germanVoices = speechSynthesis.getVoices().filter(v => v.lang.startsWith("de"));
+  console.log("Available German voices:", germanVoices);
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
 
 function speakGerman(word) {
-    const msg = new SpeechSynthesisUtterance(word);
-    msg.lang = 'de-DE';
-    msg.rate = 0.9; // повільніше для кращого розуміння
-    window.speechSynthesis.speak(msg);
+  const utterance = new SpeechSynthesisUtterance(word);
+  utterance.lang = "de-DE";
+  if (germanVoices.length > 0) {
+    const preferred = germanVoices.find(v => /google|apple/i.test(v.name));
+    utterance.voice = preferred || germanVoices[0];
+  }
+  utterance.rate = 0.9;
+  window.speechSynthesis.speak(utterance);
 }
 
-function showNextWord(){
-  if(currentIndex>=gamePairs.length){
+// ========================
+// Таймер
+// ========================
+function startTimer() {
+  clearInterval(timer);
+  let timeLeft = 10;
+  const timerDisplay = document.getElementById("timer");
+  timerDisplay.innerText = `Час: ${timeLeft}s`;
+  timer = setInterval(() => {
+    timeLeft--;
+    timerDisplay.innerText = `Час: ${timeLeft}s`;
+    if (timeLeft <= 0) {
+      clearInterval(timer); 
+      playWrongSound();
+      showMessage(`⏰ Час вичерпано! Правильна відповідь: ${gamePairs[currentIndex][1]}`, "error");
+      currentIndex++;
+      setTimeout(() => { showNextWord(); }, 1200);
+    }
+  }, 1000);
+}
+
+// ========================
+// Показ наступного слова
+// ========================
+function showNextWord() {
+  if (currentIndex >= gamePairs.length) {
     clearInterval(timer);
-    document.getElementById("message").innerText=`🎉 Гру завершено! Ваш рахунок: ${score} з ${gamePairs.length}`;
-    document.getElementById("message").className="end";
-    document.getElementById("options").innerHTML="";
-    document.getElementById("germanWord").innerText="Гра завершена";
+    document.getElementById("germanWord").innerText = "Гра завершена";
+    document.getElementById("options").innerHTML = "";
+    showMessage(`🎉 Гру завершено! Ваш рахунок: ${score} з ${gamePairs.length}`, "end");
     return;
   }
-  const currentWord=gamePairs[currentIndex];
-  document.getElementById("germanWord").innerText=currentWord[0];
-  document.getElementById("message").innerText="";
-  speakGerman(currentWord[0]);  // ✅ озвучуємо німецьке слово
 
-  let options=[currentWord[1]];
-  while(options.length<4){
-    const randomWord=themes[themeSelect.value][Math.floor(Math.random()*themes[themeSelect.value].length)][1];
-    if(!options.includes(randomWord)) options.push(randomWord);
+  const currentWord = gamePairs[currentIndex];
+  document.getElementById("germanWord").innerText = currentWord[0].toUpperCase();
+  document.getElementById("message").innerText = "";
+
+  speakGerman(currentWord[0]);
+
+  let options = [currentWord[1]];
+  while (options.length < 4) {
+    const randomWord = themes[document.getElementById('themeSelect').value][Math.floor(Math.random()*themes[document.getElementById('themeSelect').value].length)][1];
+    if (!options.includes(randomWord)) options.push(randomWord);
   }
-  options=shuffle(options);
 
-  const buttonsContainer=document.getElementById("options");
-  buttonsContainer.innerHTML="";
-  options.forEach(option=>{
-    const btn=document.createElement("button");
-    btn.innerText=option;
-    btn.onclick=()=>checkAnswer(btn,currentWord[1]);
+  options = shuffle(options);
+
+  const buttonsContainer = document.getElementById("options");
+  buttonsContainer.innerHTML = "";
+  options.forEach(option => {
+    const btn = document.createElement("button");
+    btn.innerText = option.toUpperCase();
+    btn.onclick = () => checkAnswer(btn, currentWord[1]);
     buttonsContainer.appendChild(btn);
   });
 
   startTimer();
 }
-// UI
-const startBtn=document.getElementById('startBtn');
-const endBtn=document.getElementById('endBtn');
-const themeSelect=document.getElementById('themeSelect');
 
-startBtn.addEventListener('click',()=>{
+// ========================
+// Перевірка відповіді
+// ========================
+function checkAnswer(button, correct){
+  clearInterval(timer);
+  const buttons = document.querySelectorAll("#options button");
+  buttons.forEach(btn => btn.disabled = true);
+
+  if(button.innerText.toLowerCase() === correct.toLowerCase()){
+      button.classList.add('correct');
+      score++; 
+      playCorrectSound(); 
+      showMessage("✅ Правильно!", "success");
+  } else {
+      button.classList.add('wrong'); 
+      playWrongSound(); 
+      showMessage(`❌ Неправильно! Правильна відповідь: ${correct}`, "error");
+      buttons.forEach(btn => { 
+          if(btn.innerText.toLowerCase() === correct.toLowerCase()) btn.classList.add('correct'); 
+      });
+  }
+
+  document.getElementById("score").innerText = `Рахунок: ${score}`;
+  currentIndex++; 
+
+  setTimeout(() => { showNextWord(); }, 1200);
+}
+
+// ========================
+// Допоміжні функції
+// ========================
+function showMessage(text, type) {
+  const message = document.getElementById("message"); 
+  message.innerText = text; 
+  message.className = type;
+}
+
+// Тасування масиву
+function shuffle(array) {
+  for (let i = array.length -1; i > 0; i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+// ========================
+// Старт та кнопки
+// ========================
+const startBtn = document.getElementById('startBtn');
+const endBtn = document.getElementById('endBtn');
+const themeSelect = document.getElementById('themeSelect');
+
+startBtn.addEventListener('click', ()=>{
   initAudioIfNeeded();
-  if(!themeSelect.value){alert("Оберіть тему!"); return;}
+  if (!themeSelect.value){ alert("Оберіть тему!"); return; }
   startGame();
 });
 
-endBtn.addEventListener('click',()=>{endGame();});
+endBtn.addEventListener('click', ()=>{ endGame(); });
 
 function startGame(){
-  gamePairs=shuffle([...themes[themeSelect.value]]);
-  currentIndex=0; score=0;
-  document.getElementById("score").innerText="Рахунок: 0";
-  document.getElementById("message").innerText="";
+  gamePairs = shuffle([...themes[themeSelect.value]]);
+  currentIndex = 0; 
+  score = 0;
+  document.getElementById("score").innerText = "Рахунок: 0";
+  document.getElementById("message").innerText = "";
   showNextWord();
 }
 
 function endGame(){
   clearInterval(timer);
-  document.getElementById("germanWord").innerText="Гру завершено";
-  document.getElementById("options").innerHTML="";
-  document.getElementById("timer").innerText="Час: --";
-  document.getElementById("message").innerText="Гру зупинено ❌";
-  document.getElementById("message").className="end";
+  document.getElementById("germanWord").innerText = "Гру завершено";
+  document.getElementById("options").innerHTML = "";
+  document.getElementById("timer").innerText = "Час: --";
+  showMessage("Гру зупинено ❌","end");
   try{speechSynthesis.cancel();}catch(e){}
-}
-
-function showNextWord(){
-  if(currentIndex>=gamePairs.length){
-    clearInterval(timer);
-    document.getElementById("message").innerText=`🎉 Гру завершено! Ваш рахунок: ${score} з ${gamePairs.length}`;
-    document.getElementById("message").className="end";
-    document.getElementById("options").innerHTML="";
-    document.getElementById("germanWord").innerText="Гра завершена";
-    return;
-  }
-  const currentWord=gamePairs[currentIndex];
-  document.getElementById("germanWord").innerText=currentWord[0];
-  document.getElementById("message").innerText="";
-  speakGerman(currentWord[0]);
-
-  let options=[currentWord[1]];
-  while(options.length<4){
-    const randomWord=themes[themeSelect.value][Math.floor(Math.random()*themes[themeSelect.value].length)][1];
-    if(!options.includes(randomWord)) options.push(randomWord);
-  }
-  options=shuffle(options);
-
-  const buttonsContainer=document.getElementById("options");
-  buttonsContainer.innerHTML="";
-  options.forEach(option=>{
-    const btn=document.createElement("button");
-    btn.innerText=option;
-    btn.onclick=()=>checkAnswer(btn,currentWord[1]);
-    buttonsContainer.appendChild(btn);
-  });
-
-  startTimer();
-}
-
-function startTimer(){
-  clearInterval(timer);
-  let timeLeft=10;
-  const timerDisplay=document.getElementById("timer");
-  timerDisplay.innerText=`Час: ${timeLeft}s`;
-  timer=setInterval(()=>{
-    timeLeft--; timerDisplay.innerText=`Час: ${timeLeft}s`;
-    if(timeLeft<=0){
-      clearInterval(timer); playWrongSound();
-      showMessage(`⏰ Час вичерпано! Правильна відповідь: ${gamePairs[currentIndex][1]}`,"error");
-      currentIndex++; setTimeout(showNextWord,1200);
-    }
-  },1000);
-}
-
-function checkAnswer(button,correct){
-  clearInterval(timer);
-  const buttons=document.querySelectorAll("#options button");
-  buttons.forEach(btn=>btn.disabled=true);
-
-  if(button.innerText===correct){button.classList.add('correct'); score++; playCorrectSound(); showMessage("✅ Правильно!","success");}
-  else{button.classList.add('wrong'); playWrongSound(); showMessage(`❌ Неправильно! Правильна відповідь: ${correct}`,"error");
-       buttons.forEach(btn=>{if(btn.innerText===correct) btn.classList.add('correct');})}
-
-  document.getElementById("score").innerText=`Рахунок: ${score}`;
-  currentIndex++; setTimeout(showNextWord,1200);
-}
-
-function showMessage(text,type){
-  const message=document.getElementById("message"); message.innerText=text; message.className=type;
-}
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
 }
