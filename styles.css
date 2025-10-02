@@ -1,129 +1,171 @@
-/* ========================
-   Основні стилі
-======================== */
 body {
-    font-family: 'Segoe UI', Tahoma, sans-serif;
-    background: linear-gradient(135deg,#f0f8ff,#d1ecf1);
-    text-align: center;
-    padding: 40px 20px;
-    color: #333;
-    margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #89f7fe, #66a6ff);
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  min-height: 100vh;
+  margin: 0;
 }
 
-header {
-    background: #2980b9;
-    color: white;
-    padding: 25px;
-    border-radius: 12px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+.container {
+  max-width: 500px;
+  width: 100%;
+  background-color: rgba(255,255,255,0.87);
+  padding: 25px;
+  border-radius: 20px;
+  box-shadow: 0 15px 25px rgba(0,0,0,0.2);
+  text-align: center;
+  backdrop-filter: blur(10px);
 }
 
-header h1 {
-    margin: 0;
-    font-size: 36px;
+h1 {
+  font-size: 2em;
+  margin-bottom: 10px;
+  color: #2a7ae2;
 }
 
-/* ========================
-   Слово та кнопки
-======================== */
-#germanWord {
-    font-size: 36px;
-    margin-bottom: 25px;
-    color: #2c3e50;
-    font-weight: bold;
+.select-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
 }
 
-#options {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-    margin-bottom: 20px;
+.select-row label {
+  font-weight: bold;
+  margin-bottom: 5px;
 }
 
-#options button, 
-#controls button, 
-select {
-    background: #3498db;
-    color: white;
-    border: none;
-    border-radius: 12px;
-    padding: 20px 30px;
-    font-size: 22px;
-    cursor: pointer;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.15);
-    transition: all 0.22s ease;
-    min-width: 140px;
+.select-row select {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #bea6d3, #92b3eb);
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
+  flex: 1;
+  margin-left: 10px;
+  min-width: 150px;
 }
 
-#options button:hover, 
-#controls button:hover, 
-select:hover {
-    background: #1f6391;
-    transform: scale(1.05);
-    box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+.select-row select:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.3);
 }
 
-/* ========================
-   Правильні / неправильні відповіді
-======================== */
-.correct {
-    background: #2ecc71 !important;
-    box-shadow: 0 8px 20px rgba(46,204,113,0.2) !important;
+/* РљР°СЂС‚РєР° СЃР»РѕРІР° */
+.word-card {
+  background: #f9f9f9;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px auto;
+  font-size: 2em;
+  font-weight: bold;
+  color: #333;
+  box-shadow: inset 0 0 8px rgba(0,0,0,0.1),
+              0 4px 10px rgba(0,0,0,0.15);
+  width: 90%;
+  max-width: 400px;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ddd;
+  text-transform: capitalize;
 }
 
-.wrong {
-    background: #e74c3c !important;
-    box-shadow: 0 8px 20px rgba(231,76,60,0.2) !important;
+/* Р’Р°СЂС–Р°РЅС‚Рё РІС–РґРїРѕРІС–РґС– */
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Р±С–Р»СЊС€РёР№ РїСЂРѕРјС–Р¶РѕРє */
+  margin-bottom: 20px;
 }
 
-/* ========================
-   Таймер, рахунок та повідомлення
-======================== */
-#timer {
-    font-size: 22px;
-    font-weight: 600;
-    margin-bottom: 10px;
-    color: #e74c3c;
+.option-btn {
+  padding: 12px 20px;
+  font-size: 1.05em;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  border-radius: 12px;
+  background: rgba(102, 166, 255, 0.25);
+  color: #2a2a2a;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s, background 0.3s, box-shadow 0.2s, opacity 0.3s;
+  opacity: 0;
+  transform: translateY(-15px);
 }
 
-#score {
-    font-size: 22px;
-    font-weight: 600;
-    margin-top: 10px;
-    color: #27ae60;
+.option-btn.show { opacity:1; transform: translateY(0); }
+
+.option-btn:hover {
+  background: rgba(102, 166, 255, 0.4);
+  transform: scale(1.03);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
 
-#message {
-    margin-top: 20px;
-    font-size: 22px;
-    font-weight: bold;
-    min-height: 30px;
+.option-btn.correct { background: rgba(67,233,123,0.35); }
+.option-btn.wrong { background: rgba(255,117,140,0.35); }
+
+/* РљРЅРѕРїРєРё РќРѕРІР° РіСЂР° / Р—Р°РІРµСЂС€РёС‚Рё РіСЂСѓ */
+button {
+  padding: 10px 18px;
+  margin: 15px 8px 5px 8px;
+  border-radius: 10px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  background-color: #2a7ae2;
+  color: #ffffff;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.2);
 }
 
-#message.success { color: #2ecc71; }
-#message.error { color: #e74c3c; }
-#message.end { color: #8e44ad; }
-
-/* ========================
-   Контролі
-======================== */
-#controls {
-    margin-top: 30px;
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-    flex-wrap: wrap;
+button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.3);
 }
 
-/* ========================
-   Адаптивність для мобільних
-======================== */
-@media (max-width: 600px) {
-    header h1 { font-size: 28px; padding: 20px; }
-    #germanWord { font-size: 32px; }
-    #options button, #controls button, select { font-size: 24px; padding: 22px 32px; min-width: 160px; }
-    #timer, #score { font-size: 24px; }
-    #message { font-size: 22px; min-height: 32px; }
+#timer-container, #progress-container {
+  width: 100%;
+  height: 12px;
+  border-radius: 10px;
+  margin: 15px 0;
+  overflow: hidden;
+}
+
+#timer-container { background-color: #ddd; }
+#progress-container { background-color: #eee; }
+
+#timer-bar {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #ff758c, #ff7eb3);
+  border-radius: 10px;
+  transition: width 0.1s linear;
+}
+
+#progress-bar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #43e97b, #38f9d7);
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+#feedback { font-weight: bold; margin: 10px 0; font-size: 1.1em; }
+#score, #combo { margin-top: 8px; font-size: 1.15em; font-weight: bold; }
+.final-result { margin-top: 25px; font-size: 1.25em; font-weight: bold; color: #2a7ae2; }
+
+@media (max-width: 600px){
+  .select-row { flex-direction: column; align-items: flex-start; }
+  .select-row select { margin-left:0; width:100%; }
+  .option-btn { font-size:1em; padding:10px; }
+  .container { padding:20px; }
 }

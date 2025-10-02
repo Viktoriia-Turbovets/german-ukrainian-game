@@ -1,35 +1,79 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-<meta charset="UTF-8">
-<title>Гра німецько-українська: вибір теми</title>
-<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Міні-гра: Вивчення німецької мови</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <div class="container">
+    <h1>Міні-гра: Вивчення німецької мови</h1>
+    <p>Вгадайте переклад слова за 15 секунд!</p>
 
-<header><h1>Гра німецько-українська</h1></header>
-
-<select id="themeSelect">
-  <option value="">Виберіть тему</option>
-  <option value="hygiene">Догляд і гігієна</option>
-  <option value="medicine">Медицина</option>
-  <option value="exercise">Рух і здоров’я</option>
-  <option value="leisure">Дозвілля</option>
-  <option value="travel">Подорожі</option>
-  <option value="family">Сім’я</option>
-</select>
-
-<h2 id="germanWord">Натисніть "Почати нову гру"</h2>
-<div id="options"></div>
-<div id="timer">Час: --</div>
-<div id="score">Рахунок: 0</div>
-<div id="message"></div>
-
-<div id="controls">
-  <button id="startBtn">Почати нову гру</button>
-  <button id="endBtn">Закінчити гру</button>
+   <!-- Вибір категорії -->
+<div class="select-row">
+  <label for="category">Оберіть категорію:</label>
+  <select id="category" onchange="changeCategory()">
+    <option value="greetings">Привітання</option>
+    <option value="food">Їжа та напої</option>
+    <option value="travel">Подорожі</option>
+    <option value="weather">Погода</option>
+    <option value="family">Сім’я</option>
+    <option value="professions">Професії</option>
+    <option value="animals">Тварини</option>
+    <option value="clothes">Одяг</option>
+    <option value="colors">Кольори</option>
+    <option value="school">Школа</option>
+    <option value="care">Догляд</option> <!-- нова категорія -->
+    <option value="medicine">Медицина</option> <!-- нова категорія -->
+  </select>
 </div>
+    <!-- Вибір напрямку перекладу -->
+    <div class="select-row">
+      <label for="translation-direction">Напрямок перекладу:</label>
+      <select id="translation-direction" onchange="changeDirection()">
+        <option value="de-to-ua">Німецька → Українська</option>
+        <option value="ua-to-de">Українська → Німецька</option>
+      </select>
+    </div>
 
-<script src="game.js"></script>
+    <!-- Вибір рівня -->
+    <div class="select-row">
+      <label for="level">Рівень складності:</label>
+      <select id="level" onchange="changeLevel()">
+        <option value="1">Простий (2 варіанти)</option>
+        <option value="2">Середній (3 варіанти)</option>
+        <option value="3">Складний (4 варіанти)</option>
+      </select>
+    </div>
+
+    <!-- Картка слова -->
+    <div id="word-card" class="word-card"></div>
+
+    <!-- Варіанти відповіді -->
+    <div id="options" class="options"></div>
+
+    <!-- Кнопки управління -->
+    <button onclick="startNewGame()">Нова гра</button>
+    <button onclick="endGame()">Завершити гру</button>
+
+    <!-- Таймер та прогрес -->
+    <div id="timer-container"><div id="timer-bar"></div></div>
+    <div id="progress-container"><div id="progress-bar"></div></div>
+
+    <!-- Фідбек та рахунок -->
+    <p id="feedback"></p>
+    <p id="score">Рахунок: 0</p>
+    <p id="combo">Серія правильних відповідей: 0</p>
+    <p>Найвищий рекорд: <span id="highscore">0</span></p>
+    <div id="final-result" class="final-result"></div>
+
+    <!-- Аудіо -->
+    <audio id="sound-correct" src="correct.mp3"></audio>
+    <audio id="sound-wrong" src="wrong.mp3"></audio>
+  </div>
+
+  <script src="game.js"></script>
 </body>
 </html>
