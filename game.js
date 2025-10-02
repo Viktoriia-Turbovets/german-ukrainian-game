@@ -81,7 +81,6 @@ const themes = {
 };
 
 
-
 // ====== Змінні гри ======
 let currentWord = {};
 let score = 0;
@@ -90,42 +89,36 @@ let timer;
 let timeLeft = 15;
 let currentCategory = 'hygiene';
 let usedWords = [];
-let translationDirection = 'hr-to-ua'; // німецьке -> українське
+let translationDirection = 'de-to-ua'; // німецьке -> українське
 
-// ====== Покращене озвучування німецьких слів ======
+// ====== Озвучування ======
 function speakWord(word) {
-  if (!('speechSynthesis' in window)) return;
-
   const utterance = new SpeechSynthesisUtterance(word);
   utterance.lang = 'de-DE';
-  utterance.rate = 0.85;
+  utterance.rate = 0.9;
   utterance.pitch = 1.05;
   utterance.volume = 1;
 
   function setVoice() {
     const voices = speechSynthesis.getVoices();
-    let selectedVoice = voices.find(v =>
-      v.lang.startsWith('de') &&
-      (v.name.toLowerCase().includes('google') || v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('frau'))
-    );
-    if (!selectedVoice) selectedVoice = voices.find(v => v.lang.startsWith('de'));
-    if (!selectedVoice) selectedVoice = voices[0];
+    // шукаємо жіночий німецький голос
+    let deVoice = voices.find(v => v.lang.includes('de') && /female|frau/i.test(v.name));
+    if (!deVoice) deVoice = voices.find(v => v.lang.includes('de')); // будь-який німецький
+    if (!deVoice) deVoice = voices[0]; // fallback
+    utterance.voice = deVoice;
 
-    utterance.voice = selectedVoice;
     speechSynthesis.cancel();
     speechSynthesis.speak(utterance);
   }
 
-  // Якщо голоси ще не завантажились (часто на мобільних)
   if (speechSynthesis.getVoices().length === 0) {
-    speechSynthesis.onvoiceschanged = () => {
-      setTimeout(setVoice, 100); // маленька пауза, щоб голоси точно підвантажились
-    };
+    speechSynthesis.onvoiceschanged = setVoice;
   } else {
     setVoice();
   }
 }
 
+// ====== Вибір наступного слова ======
 function nextWord() {
   clearInterval(timer);
   timeLeft = 15;
@@ -143,7 +136,7 @@ function nextWord() {
   currentWord = categoryWords[randomIndex];
   usedWords.push(currentWord[0]);
 
-  const wordToShow = translationDirection === 'hr-to-ua' ? currentWord[0] : currentWord[1];
+  const wordToShow = translationDirection === 'de-to-ua' ? currentWord[0] : currentWord[1];
   document.getElementById('germanWord').textContent = wordToShow;
 
   speakWord(wordToShow);
@@ -158,17 +151,17 @@ function createOptions() {
 
   const allWords = [].concat(...Object.values(themes));
   const answersSet = new Set();
-  const correctAnswer = translationDirection === 'hr-to-ua' ? currentWord[1] : currentWord[0];
+  const correctAnswer = translationDirection === 'de-to-ua' ? currentWord[1] : currentWord[0];
   answersSet.add(correctAnswer);
 
   while (answersSet.size < optionsCount) {
     const randomWord = allWords[Math.floor(Math.random() * allWords.length)];
-    const answer = translationDirection === 'hr-to-ua' ? randomWord[1] : randomWord[0];
+    const answer = translationDirection === 'de-to-ua' ? randomWord[1] : randomWord[0];
     answersSet.add(answer);
   }
 
   const shuffled = Array.from(answersSet).sort(() => Math.random() - 0.5);
-  shuffled.forEach((answer, index) => {
+  shuffled.forEach(answer => {
     const btn = document.createElement('button');
     btn.textContent = answer;
     btn.classList.add('option-btn');
@@ -206,7 +199,7 @@ function startTimer() {
     if (timeLeft <= 0) {
       clearInterval(timer);
       combo = 0;
-      const correctAnswer = translationDirection === 'hr-to-ua' ? currentWord[1] : currentWord[0];
+      const correctAnswer = translationDirection === 'de-to-ua' ? currentWord[1] : currentWord[0];
       document.getElementById('message').textContent = `Час вийшов! Правильна відповідь: ${correctAnswer}`;
       document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
       setTimeout(() => nextWord(), 1000);
@@ -214,7 +207,6 @@ function startTimer() {
   }, 1000);
 }
 
-// ====== Таймер відображення ======
 function updateTimer() {
   document.getElementById('timer').textContent = `Час: ${timeLeft}`;
 }
