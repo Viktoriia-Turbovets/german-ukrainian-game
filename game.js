@@ -98,33 +98,29 @@ function speakWord(word) {
 
   const utterance = new SpeechSynthesisUtterance(word);
   utterance.lang = 'de-DE';
-  utterance.rate = 0.85;    // трохи повільніше для природної вимови
-  utterance.pitch = 1.05;   // легкий підйом тону
+  utterance.rate = 0.85;
+  utterance.pitch = 1.05;
   utterance.volume = 1;
 
   function setVoice() {
     const voices = speechSynthesis.getVoices();
-
-    // Пошук природного голосу для мобільних: німецький, жіночий, максимально схожий на хорватський
     let selectedVoice = voices.find(v =>
       v.lang.startsWith('de') &&
       (v.name.toLowerCase().includes('google') || v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('frau'))
     );
-
-    // fallback: будь-який німецький голос
     if (!selectedVoice) selectedVoice = voices.find(v => v.lang.startsWith('de'));
-    // fallback: перший доступний голос
     if (!selectedVoice) selectedVoice = voices[0];
 
     utterance.voice = selectedVoice;
-
-    speechSynthesis.cancel();  // скасовує попередні озвучення
+    speechSynthesis.cancel();
     speechSynthesis.speak(utterance);
   }
 
-  // Голоси можуть підвантажуватись пізніше на мобільних
+  // Якщо голоси ще не завантажились (часто на мобільних)
   if (speechSynthesis.getVoices().length === 0) {
-    speechSynthesis.onvoiceschanged = setVoice;
+    speechSynthesis.onvoiceschanged = () => {
+      setTimeout(setVoice, 100); // маленька пауза, щоб голоси точно підвантажились
+    };
   } else {
     setVoice();
   }
