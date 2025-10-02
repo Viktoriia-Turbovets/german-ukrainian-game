@@ -92,80 +92,44 @@ let currentCategory = 'hygiene';
 let usedWords = [];
 let translationDirection = 'hr-to-ua'; // німецьке -> українське
 
-// ====== Озвучування ======
-// ====== Покращене озвучування для мобільних та десктопу ======
-// ====== Покращене озвучування для німецьких слів ======
+// ====== Покращене озвучування німецьких слів ======
 function speakWord(word) {
   if (!('speechSynthesis' in window)) return;
 
   const utterance = new SpeechSynthesisUtterance(word);
-  utterance.lang = 'de-DE'; // німецька
-  utterance.rate = 0.9;      // швидкість
-  utterance.pitch = 1.05;    // тембр
+  utterance.lang = 'de-DE';
+  utterance.rate = 0.85;    // трохи повільніше для природної вимови
+  utterance.pitch = 1.05;   // легкий підйом тону
   utterance.volume = 1;
 
   function setVoice() {
     const voices = speechSynthesis.getVoices();
 
-    // Спроба вибрати саме той голос, як у хорватській версії
-    // Пошук за типом "female" та мовою німецькою
+    // Пошук природного голосу для мобільних: німецький, жіночий, максимально схожий на хорватський
     let selectedVoice = voices.find(v =>
       v.lang.startsWith('de') &&
-      /female|frau/i.test(v.name)
+      (v.name.toLowerCase().includes('google') || v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('frau'))
     );
 
-    // Якщо не знайшли, беремо будь-який німецький голос
+    // fallback: будь-який німецький голос
     if (!selectedVoice) selectedVoice = voices.find(v => v.lang.startsWith('de'));
-
-    // Якщо і його немає, fallback на перший голос
+    // fallback: перший доступний голос
     if (!selectedVoice) selectedVoice = voices[0];
 
     utterance.voice = selectedVoice;
 
-    // Скидаємо попередні озвучення і вимовляємо слово
-    speechSynthesis.cancel();
+    speechSynthesis.cancel();  // скасовує попередні озвучення
     speechSynthesis.speak(utterance);
   }
 
-  // Голоси можуть завантажуватися пізніше на мобільних
-  if (speechSynthesis.getVoices().length === 0) {
-    speechSynthesis.onvoiceschanged = setVoice;
-  } else {
-    setVoice();
-  }
-
-
-  function setVoice() {
-    const voices = speechSynthesis.getVoices();
-
-    // спробувати знайти жіночий німецький голос
-    let deVoice = voices.find(v => v.lang.includes('de') && v.name.toLowerCase().includes('female'));
-    if (!deVoice) deVoice = voices.find(v => v.lang.includes('de')); // будь-який німецький голос
-    if (!deVoice) deVoice = voices[0]; // fallback – перший доступний голос
-
-    utterance.voice = deVoice;
-
-    // скасувати попереднє озвучування, якщо було
-    speechSynthesis.cancel();
-    speechSynthesis.speak(utterance);
-  }
-
-  // Якщо голоси ще не завантажились (поширено на мобільних)
-  if (speechSynthesis.getVoices().length === 0) {
-    speechSynthesis.onvoiceschanged = setVoice;
-  } else {
-    setVoice();
-  }
-
-  // Голоси на мобільних можуть підвантажуватися пізніше
+  // Голоси можуть підвантажуватись пізніше на мобільних
   if (speechSynthesis.getVoices().length === 0) {
     speechSynthesis.onvoiceschanged = setVoice;
   } else {
     setVoice();
   }
 }
-// ====== Покращене озвучування ======
-// ====== Вибір наступного слова ======
+
 function nextWord() {
   clearInterval(timer);
   timeLeft = 15;
